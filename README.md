@@ -22,6 +22,12 @@ Upmizer automates the process of preparing Unity packages for distribution via t
 | `samples_root` | Path to your samples directory                                   | No       | `Samples` |
 | `github_token` | GitHub authentication token with repo permissions                | Yes      | -         |
 
+## Permissions
+
+The action requires the following permissions to function correctly:
+
+- `contents: write` - To create and push the UPM branch
+
 ## Usage
 
 ```yaml
@@ -33,7 +39,6 @@ Upmizer automates the process of preparing Unity packages for distribution via t
 
     # Required, path to your package's root directory
     package_root: "Assets/MyPackage"
-
 
     # Default: Samples
     samples_root: "Assets/MyPackage/Samples"
