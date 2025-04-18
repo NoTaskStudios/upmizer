@@ -1,0 +1,60 @@
+name: "Upmizer"
+description: "Unity UPM"
+author: "NoTask <contact@notask.com>"
+branding:
+  icon: "package"
+  color: "blue"
+inputs:
+  upm_branch:
+    description: "Branch to be created for UPM distribution"
+    required: false
+    default: "upm"
+  package_root:
+    description: "Path to the package root directory"
+    required: true
+  samples_root:
+    description: "Path to the samples directory"
+    required: false
+    default: "Samples"
+  github_token:
+    description: "GitHub authentication token"
+    default: ${{ github.token }}
+runs:
+  using: "composite"
+  steps:
+    - name: Bot identity
+      shell: bash
+      run: |
+        git config user.name 'notask-bot'
+        git config user.email 'notask-bot@users.noreply.github.com'
+
+    - name: Cook UPM
+      shell: bash
+      run: |
+        git branch -d "$PACKAGE_ROOT" || true
+        git subtree split -P "$PACKAGE_ROOT" -b $BRANCH_NAME
+        git checkout $BRANCH_NAME
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        BRANCH_NAME: ${{ inputs.upm_branch }}
+        PACKAGE_ROOT: ${{ inputs.package_root }}
+
+    - name: Push UPM
+      shell: bash
+      run: |
+        git push -f -u origin $BRANCH_NAME
+      env:
+        BRANCH_NAME: ${{ inputs.upm_branch }}
+
+    - name: Set Samples
+      shell: bash
+      run: |
+        if [[ -d "$SAMPLES_ROOT" ]]; then
+          git mv "$SAMPLES_ROOT" Samples~
+          rm -f "$SAMPLES_ROOT.meta" || true
+          git commit -am "fix: $SAMPLES_ROOT => Samples~"
+        fi
+        git push -f -u origin $BRANCH_NAME
+      env:
+        BRANCH_NAME: ${{ inputs.upm_branch }}
+        SAMPLES_ROOT: ${{ inputs.samples_root }}
