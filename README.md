@@ -1,5 +1,8 @@
 # Upmizer GitHub Action
 
+[![Version](https://img.shields.io/github/v/tag/NoTaskStudios/Upmizer?label=version)](https://github.com/NoTaskStudios/Upmizer/tags)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A GitHub Action that prepares your Unity package for UPM (Unity Package Manager) distribution by creating a dedicated UPM branch with the correct structure.
 
 ## Description
