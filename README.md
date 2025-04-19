@@ -28,6 +28,37 @@ The action requires the following permissions to function correctly:
 
 - `contents: write` - To create and push the UPM branch
 
+## Recommended Folder Structure
+
+When developing Unity packages for UPM distribution, organizing your repository with the proper structure is essential. The following structure is recommended as it:
+
+- Conforms to Unity's package layout standards
+- Facilitates seamless UPM conversion
+- Improves discoverability of package components
+- Simplifies maintenance and versioning
+
+```
+<root>
+  ├── README.md
+  ├── Assets
+  │   └── [YourPackageName]
+  │         ├── package.json
+  │         ├── Runtime
+  │         │    ├── [YourPackageName].asmdef
+  │         │    └── ...
+  │         └── Samples
+  │         │     ├── Sample 1
+  │         │     ├── Sample 2
+  │         │     ├── Sample 3
+  │         │     └── ...
+  │         └── Documentation
+  │               ├── Doc 1
+  │               ├── Doc 2
+  │               ├── Doc 3
+  │               └── ...
+  ├── ...
+```
+
 ## Usage
 
 ```yaml
