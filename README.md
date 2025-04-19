@@ -71,8 +71,13 @@ When developing Unity packages for UPM distribution, organizing your repository 
     # Required, path to your package's root directory
     package_root: "Assets/MyPackage"
 
+    # Path to your package's samples directory
     # Default: Samples
     samples_root: "Assets/MyPackage/Samples"
+
+    # Path to your package's documentation directory
+    # Default: Documentation
+    docs_root: "Assets/MyPackage/Documentation"
 
     # Required, GitHub token with repo permissions
     # You can use the default GITHUB_TOKEN secret provided by GitHub Actions
