@@ -16,6 +16,10 @@ inputs:
     description: "Path to the samples directory"
     required: false
     default: "Samples"
+  docs_root:
+    description: "Path to the documentation directory"
+    required: false
+    default: "Documentation"
   github_token:
     description: "GitHub authentication token"
     default: ${{ github.token }}
@@ -34,19 +38,13 @@ runs:
         git branch -d "$BRANCH_NAME" || true
         git subtree split -P "$PACKAGE_ROOT" -b $BRANCH_NAME
         git checkout $BRANCH_NAME
+        git push -f -u origin $BRANCH_NAME
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         BRANCH_NAME: ${{ inputs.upm_branch }}
         PACKAGE_ROOT: ${{ inputs.package_root }}
 
-    - name: Push UPM
-      shell: bash
-      run: |
-        git push -f -u origin $BRANCH_NAME
-      env:
-        BRANCH_NAME: ${{ inputs.upm_branch }}
-
-    - name: Set Samples
+    - name: Cook Samples
       shell: bash
       run: |
         if [[ -d "$SAMPLES_ROOT" ]]; then
@@ -58,3 +56,17 @@ runs:
       env:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         SAMPLES_ROOT: ${{ inputs.samples_root }}
+    
+    - name: Cook Documentation
+      shell: bash
+      run: |
+        if [[ -d "$DOCS_ROOT" ]]; then
+          git mv "$DOCS_ROOT" Documentation~
+          rm -f "$DOCS_ROOT.meta" || true
+          git commit -am "fix: $DOCS_ROOT => Documentation~"
+        fi
+        git push -f -u origin $BRANCH_NAME
+      env:
+        BRANCH_NAME: ${{ inputs.upm_branch }}
+        DOCS_ROOT: ${{ inputs.docs_root }}
+
