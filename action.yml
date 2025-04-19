@@ -1,30 +1,52 @@
-name: "Upmizer"
-description: "Unity UPM"
-author: "NoTask <contact@notask.com>"
+name: Upmizer
+description: Unity UPM
+author: NoTask <contact@notask.com>
 branding:
-  icon: "package"
-  color: "blue"
+  icon: package
+  color: blue
 inputs:
   upm_branch:
-    description: "Branch to be created for UPM distribution"
+    description: Branch to be created for UPM distribution
     required: false
-    default: "upm"
+    default: upm
   package_root:
-    description: "Path to the package root directory"
+    description: Path to the package root directory
     required: true
   samples_root:
-    description: "Path to the samples directory"
+    description: Path to the samples directory
     required: false
-    default: "Samples"
+    default: Samples
   docs_root:
-    description: "Path to the documentation directory"
+    description: Path to the documentation directory
     required: false
-    default: "Documentation"
+    default: Documentation
   github_token:
-    description: "GitHub authentication token"
+    description: GitHub authentication token
     default: ${{ github.token }}
+  versioning:
+    description: Versioning strategy [tag, semantic, custom]
+    required: false
+    default: semantic
+  version:
+    description: Version to be used for the package when custom is set [major.minor.patch]
+    required: false
+    default: 0.0.0
+  publish:
+    description: Publish the package to NPM [true, false]
+    required: false
+    default: 'false'
+  registry_url:
+    description: NPM registry URL
+    default: https://registry.npmjs.org/
+  registry_token:
+    description: NPM authentication token
+    default: ${{ secrets.NPM_TOKEN }}
+  scope:
+    description: Scope for the package registry
+    default: ''
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Bot identity
       shell: bash
@@ -56,7 +78,7 @@ runs:
       env:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         SAMPLES_ROOT: ${{ inputs.samples_root }}
-    
+
     - name: Cook Documentation
       shell: bash
       run: |
@@ -70,3 +92,18 @@ runs:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         DOCS_ROOT: ${{ inputs.docs_root }}
 
+    - if: ${{ inputs.publish != 'false' }}
+      name: Publish UPM
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        registry-url: ${{ inputs.registry_url }}
+        scope: ${{ inputs.scope }}
+        always-auth: true
+
+    - if: ${{ inputs.publish != 'false' }}
+      shell: bash
+      run: npm publish --provenance --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.registry_token }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
