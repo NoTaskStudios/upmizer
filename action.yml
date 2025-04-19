@@ -31,7 +31,7 @@ runs:
     - name: Cook UPM
       shell: bash
       run: |
-        git branch -d "$PACKAGE_ROOT" || true
+        git branch -d "$BRANCH_NAME" || true
         git subtree split -P "$PACKAGE_ROOT" -b $BRANCH_NAME
         git checkout $BRANCH_NAME
       env:
