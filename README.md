@@ -15,12 +15,13 @@ Upmizer automates the process of preparing Unity packages for distribution via t
 
 ## Inputs
 
-| Name           | Description                                                      | Required | Default   |
-| -------------- | ---------------------------------------------------------------- | -------- | --------- |
-| `upm_branch`   | The name of the branch that will be created for UPM distribution | No       | `upm`     |
-| `package_root` | Path to your package's root directory                            | Yes      | -         |
-| `samples_root` | Path to your samples directory                                   | No       | `Samples` |
-| `github_token` | GitHub authentication token with repo permissions                | Yes      | -         |
+| Name           | Description                                                      | Required | Default         |
+| -------------- | ---------------------------------------------------------------- | -------- | --------------- |
+| `upm_branch`   | The name of the branch that will be created for UPM distribution | No       | `upm`           |
+| `package_root` | Path to your package's root directory                            | Yes      | -               |
+| `samples_root` | Path to your samples directory                                   | No       | `Samples`       |
+| `docs_root`    | Path to your samples directory                                   | No       | `Documentation` |
+| `github_token` | GitHub authentication token with repo permissions                | Yes      | -               |
 
 ## Permissions
 
