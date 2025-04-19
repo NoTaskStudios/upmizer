@@ -40,7 +40,7 @@ inputs:
     default: https://registry.npmjs.org/
   registry_token:
     description: NPM authentication token
-    default: ${{ secrets.NPM_TOKEN }}
+    required: false
   scope:
     description: Scope for the package registry
     default: ''
