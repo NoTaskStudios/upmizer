@@ -51,6 +51,10 @@ runs:
           git mv "$SAMPLES_ROOT" Samples~
           rm -f "$SAMPLES_ROOT.meta" || true
           jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' package.json > package.temp.json
+          if [[ $? -ne 0 || ! -s package.temp.json ]]; then
+            echo "Error: Failed to create package.temp.json. Aborting." >&2
+            exit 1
+          fi
           mv package.temp.json package.json
           git commit -am "fix: $SAMPLES_ROOT => Samples~"
         fi
