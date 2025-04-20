@@ -50,13 +50,22 @@ runs:
         if [[ -d "$SAMPLES_ROOT" ]]; then
           git mv "$SAMPLES_ROOT" Samples~
           rm -f "$SAMPLES_ROOT.meta" || true
+          if jq -e '.samples' package.json > /dev/null 2>&1; then
+            jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' package.json > package.temp.json
+            if [[ $? -ne 0 || ! -s package.temp.json ]]; then
+              echo "Error: Failed to create package.temp.json. Aborting." >&2
+              exit 1
+            fi
+            mv package.temp.json package.json
+          fi
           git commit -am "fix: $SAMPLES_ROOT => Samples~"
         fi
         git push -f -u origin $BRANCH_NAME
       env:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         SAMPLES_ROOT: ${{ inputs.samples_root }}
-    
+        PACKAGE_ROOT: ${{ inputs.package_root }}
+
     - name: Cook Documentation
       shell: bash
       run: |
@@ -69,4 +78,3 @@ runs:
       env:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         DOCS_ROOT: ${{ inputs.docs_root }}
-
