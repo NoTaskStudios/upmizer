@@ -50,13 +50,16 @@ runs:
         if [[ -d "$SAMPLES_ROOT" ]]; then
           git mv "$SAMPLES_ROOT" Samples~
           rm -f "$SAMPLES_ROOT.meta" || true
+          jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' $PACKAGE_ROOT/package.json > $PACKAGE_ROOT/package.temp.json
+          mv $PACKAGE_ROOT/package.temp.json $PACKAGE_ROOT/package.json
           git commit -am "fix: $SAMPLES_ROOT => Samples~"
         fi
         git push -f -u origin $BRANCH_NAME
       env:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         SAMPLES_ROOT: ${{ inputs.samples_root }}
-    
+        PACKAGE_ROOT: ${{ inputs.package_root }}
+
     - name: Cook Documentation
       shell: bash
       run: |
@@ -69,4 +72,3 @@ runs:
       env:
         BRANCH_NAME: ${{ inputs.upm_branch }}
         DOCS_ROOT: ${{ inputs.docs_root }}
-
