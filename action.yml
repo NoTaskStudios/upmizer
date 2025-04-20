@@ -50,8 +50,8 @@ runs:
         if [[ -d "$SAMPLES_ROOT" ]]; then
           git mv "$SAMPLES_ROOT" Samples~
           rm -f "$SAMPLES_ROOT.meta" || true
-          jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' $PACKAGE_ROOT/package.json > $PACKAGE_ROOT/package.temp.json
-          git mv $PACKAGE_ROOT/package.temp.json $PACKAGE_ROOT/package.json
+          jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' package.json > package.temp.json
+          mv package.temp.json package.json
           git commit -am "fix: $SAMPLES_ROOT => Samples~"
         fi
         git push -f -u origin $BRANCH_NAME
