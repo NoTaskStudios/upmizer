@@ -30,11 +30,11 @@ inputs:
   version:
     description: Version to be used for the package when custom is set [major.minor.patch]
     required: false
-    default: 0.0.0
+    default: "0.0.0"
   publish:
     description: Publish the package to NPM [true, false]
     required: false
-    default: 'false'
+    default: "false"
   registry_url:
     description: NPM registry URL
     default: https://registry.npmjs.org/
@@ -43,7 +43,7 @@ inputs:
     required: false
   scope:
     description: Scope for the package registry
-    default: ''
+    default: ""
 
 runs:
   using: composite
@@ -111,7 +111,16 @@ runs:
 
     - if: ${{ inputs.publish != 'false' }}
       shell: bash
-      run: npm publish --provenance --access public
+      run: |
+        if [[ "$REGISTRY_URL" == "https://npm.pkg.github.com" ]]; then
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          if [[ "$PACKAGE_NAME" != "@$GITHUB_REPOSITORY_OWNER/"* ]]; then
+            npm pkg set name="@$GITHUB_REPOSITORY_OWNER/${PACKAGE_NAME#@*/}"
+          fi
+        fi
+        npm publish --provenance --access public
       env:
         NODE_AUTH_TOKEN: ${{ inputs.registry_token }}
+        REGISTRY_URL: ${{ inputs.registry_url }}
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
