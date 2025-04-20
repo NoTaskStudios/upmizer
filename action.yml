@@ -50,10 +50,12 @@ runs:
         if [[ -d "$SAMPLES_ROOT" ]]; then
           git mv "$SAMPLES_ROOT" Samples~
           rm -f "$SAMPLES_ROOT.meta" || true
-          jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' package.json > package.temp.json
-          if [[ $? -ne 0 || ! -s package.temp.json ]]; then
-            echo "Error: Failed to create package.temp.json. Aborting." >&2
-            exit 1
+          if jq -e '.samples' package.json > /dev/null 2>&1; then
+            jq '.samples |= (. // [] | map(.path |= sub("Samples/"; "Samples~/")))' package.json > package.temp.json
+            if [[ $? -ne 0 || ! -s package.temp.json ]]; then
+              echo "Error: Failed to create package.temp.json. Aborting." >&2
+              exit 1
+            fi
           fi
           mv package.temp.json package.json
           git commit -am "fix: $SAMPLES_ROOT => Samples~"
