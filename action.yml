@@ -185,13 +185,49 @@ runs:
 
         case "$VERSIONING_STRATEGY" in
           semantic)
-            echo -e "${GREEN}[Versioning] Using semantic versioning (auto-increment patch)${NC}"
+            echo -e "${GREEN}[Versioning] Using semantic release (analyzing conventional commits)${NC}"
             if ! validate_version "$CURRENT_VERSION"; then
               echo -e "${YELLOW}[Warning] Invalid current version, starting from 0.0.0${NC}"
               CURRENT_VERSION="0.0.0"
             fi
-            NEW_VERSION=$(increment_version "$CURRENT_VERSION" "patch")
-            echo -e "${GREEN}[Versioning] Incremented to: ${NEW_VERSION}${NC}"
+
+            # Get the last version tag to analyze commits since then
+            LAST_VERSION_TAG=$(git tag -l --sort=-v:refname | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || echo "")
+
+            if [[ -z "$LAST_VERSION_TAG" ]]; then
+              echo -e "${YELLOW}[Info] No previous version tags found, analyzing all commits${NC}"
+              COMMIT_RANGE="HEAD"
+            else
+              echo -e "${GREEN}[Info] Analyzing commits since ${LAST_VERSION_TAG}${NC}"
+              COMMIT_RANGE="${LAST_VERSION_TAG}..HEAD"
+            fi
+
+            # Analyze commits for conventional commit patterns
+            COMMITS=$(git log "$COMMIT_RANGE" --pretty=format:"%s" 2>/dev/null || echo "")
+
+            # Determine bump type based on conventional commits
+            BUMP_TYPE="patch"  # Default to patch
+
+            # Check for BREAKING CHANGES (major bump)
+            if echo "$COMMITS" | grep -qiE '^[a-z]+(\([a-z0-9_-]+\))?!:|BREAKING CHANGE:|BREAKING-CHANGE:'; then
+              BUMP_TYPE="major"
+              echo -e "${YELLOW}[Semantic] Found BREAKING CHANGE → major version bump${NC}"
+            # Check for new features (minor bump)
+            elif echo "$COMMITS" | grep -qiE '^feat(\([a-z0-9_-]+\))?:'; then
+              BUMP_TYPE="minor"
+              echo -e "${GREEN}[Semantic] Found feat commits → minor version bump${NC}"
+            # Check for fixes or other changes (patch bump)
+            elif echo "$COMMITS" | grep -qiE '^(fix|chore|docs|style|refactor|perf|test|build|ci)(\([a-z0-9_-]+\))?:'; then
+              BUMP_TYPE="patch"
+              echo -e "${GREEN}[Semantic] Found fix/chore commits → patch version bump${NC}"
+            else
+              # No conventional commits found, default to patch
+              echo -e "${YELLOW}[Semantic] No conventional commits found → defaulting to patch bump${NC}"
+              BUMP_TYPE="patch"
+            fi
+
+            NEW_VERSION=$(increment_version "$CURRENT_VERSION" "$BUMP_TYPE")
+            echo -e "${GREEN}[Versioning] ${CURRENT_VERSION} → ${NEW_VERSION} (${BUMP_TYPE})${NC}"
             ;;
 
           tag)

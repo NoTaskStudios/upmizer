@@ -104,18 +104,26 @@ Upmizer supports three versioning strategies to manage your package versions:
 
 **Strategy**: `semantic`
 
-Automatically increments the patch version from the current version in `package.json`.
-
-- Current version: `1.2.3` → New version: `1.2.4`
-- Current version: `0.5.0` → New version: `0.5.1`
+Automatically determines the version bump type by analyzing conventional commits since the last version.
 
 **How it works:**
-- Reads the current version from `package.json`
-- Increments the patch number by 1
+- Analyzes git commits since the last version tag
+- Determines bump type based on [Conventional Commits](https://www.conventionalcommits.org/):
+  - **BREAKING CHANGE** or `feat!:` → **major** bump (1.0.0 → 2.0.0)
+  - `feat:` → **minor** bump (1.0.0 → 1.1.0)
+  - `fix:`, `chore:`, `docs:`, etc. → **patch** bump (1.0.0 → 1.0.1)
 - Updates `package.json` with the new version
-- Creates a git tag (e.g., `v1.2.4`)
+- Creates a git tag (e.g., `v1.1.0`)
 
-**Best for:** Continuous integration where each build should have a unique version.
+**Examples:**
+```
+Commits since v1.0.0:
+- feat: add new feature       → Result: 1.1.0 (minor)
+- fix: resolve bug            → Result: 1.0.1 (patch)
+- feat!: breaking change      → Result: 2.0.0 (major)
+```
+
+**Best for:** Projects using conventional commits for automated semantic versioning.
 
 ```yaml
 - uses: NoTaskStudios/upmizer@v1
@@ -184,6 +192,30 @@ All versioning strategies validate that versions follow the semantic versioning 
 
 If validation fails, the action will stop with a clear error message.
 
+### Conventional Commits Guide
+
+When using `versioning: semantic`, the action follows the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+**Format:** `<type>[optional scope][optional !]: <description>`
+
+**Bump Types:**
+
+| Commit Format | Version Bump | Example |
+|---------------|--------------|---------|
+| `feat!: description`<br>`feat: description`<br>`BREAKING CHANGE:` in body | **Major** (1.0.0 → 2.0.0) | `feat!: redesign API` |
+| `feat: description` | **Minor** (1.0.0 → 1.1.0) | `feat: add user profiles` |
+| `fix: description`<br>`chore: description`<br>etc. | **Patch** (1.0.0 → 1.0.1) | `fix: resolve null pointer` |
+
+**Supported types:** `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`
+
+**Examples:**
+```bash
+git commit -m "feat: add dark mode support"          # → Minor bump
+git commit -m "fix: resolve login issue"             # → Patch bump
+git commit -m "feat!: change API authentication"     # → Major bump
+git commit -m "chore: update dependencies"           # → Patch bump
+```
+
 ## Recommended Folder Structure
 
 When developing Unity packages for UPM distribution, organizing your repository with the proper structure is essential. The following structure is recommended as it:
@@ -242,7 +274,7 @@ This example demonstrates the basic usage of the Upmizer action. It creates a UP
 
 This example shows how to publish the package to NPM after creating the UPM branch. The `publish` flag is set to `true`, and the registry URL and token are provided.
 
-### Example 3: Semantic Versioning
+### Example 3: Semantic Versioning (Conventional Commits)
 
 ```yaml
 - uses: NoTaskStudios/upmizer@v1
@@ -252,7 +284,13 @@ This example shows how to publish the package to NPM after creating the UPM bran
     github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-This example demonstrates automatic version incrementing. Each time the action runs, it will increment the patch version (e.g., `1.0.0` → `1.0.1` → `1.0.2`), update `package.json`, and create a corresponding git tag.
+This example demonstrates automatic semantic versioning. The action analyzes your commit history using conventional commits to determine the appropriate version bump:
+
+- Commits with `feat!:` or `BREAKING CHANGE:` → major bump (2.0.0)
+- Commits with `feat:` → minor bump (1.1.0)
+- Commits with `fix:`, `chore:`, etc. → patch bump (1.0.1)
+
+**Note:** Make sure your team uses [Conventional Commits](https://www.conventionalcommits.org/) format for this strategy to work optimally.
 
 ### Example 3b: Tag-Based Versioning
 
@@ -360,6 +398,15 @@ permissions:
   contents: write
   packages: write  # Only needed for publishing
 ```
+
+### "No conventional commits found → defaulting to patch bump"
+
+**Cause:** Using `versioning: semantic` but commits don't follow conventional commit format.
+
+**Solution:** This is a warning, not an error. The action will default to patch bump. To get proper semantic versioning:
+
+1. Start using conventional commits (see Conventional Commits Guide above)
+2. Or switch to `versioning: tag` or `versioning: custom` if you prefer manual control
 
 ## Notes
 
